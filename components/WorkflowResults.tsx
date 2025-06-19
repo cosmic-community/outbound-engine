@@ -2,7 +2,9 @@
 
 import { useState } from 'react'
 import { EmailWorkflow, EmailStep } from '@/types'
-import { Copy, Check, RotateCcw, Download } from 'lucide-react'
+import EmailSequenceEditor from '@/components/EmailSequenceEditor'
+import { Copy, Check, RotateCcw, Download, Edit3, Send, Save } from 'lucide-react'
+import Link from 'next/link'
 
 interface WorkflowResultsProps {
   workflow: EmailWorkflow;
@@ -10,6 +12,8 @@ interface WorkflowResultsProps {
 
 export default function WorkflowResults({ workflow }: WorkflowResultsProps) {
   const [copiedItems, setCopiedItems] = useState<Set<string>>(new Set());
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedSteps, setEditedSteps] = useState<EmailStep[]>([]);
 
   const handleCopy = async (text: string, id: string) => {
     try {
@@ -39,7 +43,30 @@ export default function WorkflowResults({ workflow }: WorkflowResultsProps) {
     await handleCopy(allEmailsText, 'all-emails');
   };
 
-  const workflowSteps = workflow.metadata?.generated_workflow?.steps;
+  const handleSaveEdits = async (steps: EmailStep[]) => {
+    try {
+      const response = await fetch('/api/update-workflow', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          workflowId: workflow.id,
+          steps
+        }),
+      });
+
+      if (response.ok) {
+        setEditedSteps(steps);
+        setIsEditing(false);
+        // In a real app, you might want to show a success message
+      }
+    } catch (error) {
+      console.error('Error saving edits:', error);
+    }
+  };
+
+  const workflowSteps = editedSteps.length > 0 ? editedSteps : workflow.metadata?.generated_workflow?.steps;
   const workflowSummary = workflow.metadata?.generated_workflow?.summary;
 
   if (!workflowSteps) {
@@ -63,23 +90,46 @@ export default function WorkflowResults({ workflow }: WorkflowResultsProps) {
               </p>
             </div>
             <div className="flex space-x-2 mt-4 md:mt-0">
-              <button
-                onClick={handleCopyAll}
-                className="btn-outline"
-                disabled={copiedItems.has('all-emails')}
-              >
-                {copiedItems.has('all-emails') ? (
-                  <>
-                    <Check className="w-4 h-4 mr-2" />
-                    Copied All!
-                  </>
-                ) : (
-                  <>
-                    <Download className="w-4 h-4 mr-2" />
-                    Copy All Emails
-                  </>
-                )}
-              </button>
+              {!isEditing && (
+                <>
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="btn-outline"
+                  >
+                    <Edit3 className="w-4 h-4 mr-2" />
+                    Edit Sequence
+                  </button>
+                  <button
+                    onClick={handleCopyAll}
+                    className="btn-outline"
+                    disabled={copiedItems.has('all-emails')}
+                  >
+                    {copiedItems.has('all-emails') ? (
+                      <>
+                        <Check className="w-4 h-4 mr-2" />
+                        Copied All!
+                      </>
+                    ) : (
+                      <>
+                        <Download className="w-4 h-4 mr-2" />
+                        Copy All Emails
+                      </>
+                    )}
+                  </button>
+                  <Link href="/send" className="btn-primary">
+                    <Send className="w-4 h-4 mr-2" />
+                    Send Campaign
+                  </Link>
+                </>
+              )}
+              {isEditing && (
+                <button
+                  onClick={() => setIsEditing(false)}
+                  className="btn-outline"
+                >
+                  Cancel Edit
+                </button>
+              )}
               <button
                 onClick={() => window.location.href = '/generate'}
                 className="btn-secondary"
@@ -112,94 +162,41 @@ export default function WorkflowResults({ workflow }: WorkflowResultsProps) {
         </div>
       </div>
 
-      {/* Email Steps */}
-      <div className="space-y-6">
-        {workflowSteps.map((step: EmailStep, index: number) => (
-          <div key={index} className="card">
-            <div className="card-content">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-primary text-primary-foreground rounded-lg flex items-center justify-center font-semibold">
-                    {step.step}
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Email {step.step}</h3>
-                    <p className="text-sm text-muted-foreground">{step.timing}</p>
-                  </div>
-                </div>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => handleCopy(step.subject, `subject-${step.step}`)}
-                    className="text-muted-foreground hover:text-primary p-1"
-                    title="Copy subject"
-                  >
-                    {copiedItems.has(`subject-${step.step}`) ? (
-                      <Check className="w-4 h-4" />
-                    ) : (
-                      <Copy className="w-4 h-4" />
-                    )}
-                  </button>
-                  <button
-                    onClick={() => handleCopy(`Subject: ${step.subject}\n\n${step.body}`, `email-${step.step}`)}
-                    className="btn-outline btn-sm"
-                  >
-                    {copiedItems.has(`email-${step.step}`) ? (
-                      <>
-                        <Check className="w-4 h-4 mr-1" />
-                        Copied!
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-4 h-4 mr-1" />
-                        Copy Email
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {/* Subject Line */}
-              <div className="mb-4">
-                <label className="text-sm font-medium text-muted-foreground">Subject Line:</label>
-                <div className="mt-1 p-3 bg-muted/50 rounded-lg">
-                  <p className="font-medium">{step.subject}</p>
-                </div>
-              </div>
-
-              {/* Email Body */}
-              <div className="mb-4">
-                <label className="text-sm font-medium text-muted-foreground">Email Body:</label>
-                <div className="mt-1 p-4 bg-muted/50 rounded-lg">
-                  <pre className="whitespace-pre-wrap font-sans text-sm">{step.body}</pre>
-                </div>
-              </div>
-
-              {/* Notes */}
-              {step.notes && (
-                <div className="p-3 bg-primary/5 border-l-4 border-primary rounded-r-lg">
-                  <p className="text-sm">
-                    <span className="font-medium">Strategy Note:</span> {step.notes}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
+      {/* Email Sequence Editor */}
+      <EmailSequenceEditor
+        steps={workflowSteps}
+        onSave={handleSaveEdits}
+        isEditing={isEditing}
+      />
 
       {/* Next Steps */}
-      <div className="card">
-        <div className="card-content">
-          <h3 className="text-lg font-semibold mb-4">Next Steps</h3>
-          <div className="space-y-2 text-muted-foreground">
-            <p>✅ Your email sequence is ready to use</p>
-            <p>✅ Copy individual emails or the entire sequence</p>
-            <p>✅ Customize the content to match your brand voice</p>
-            <p>✅ Set up your email automation tool with the suggested timing</p>
-            <p>✅ Track your results and optimize based on performance</p>
+      {!isEditing && (
+        <div className="card">
+          <div className="card-content">
+            <h3 className="text-lg font-semibold mb-4">Next Steps</h3>
+            <div className="space-y-2 text-muted-foreground">
+              <p>✅ Your email sequence is ready to use</p>
+              <p>✅ Edit individual emails to customize content</p>
+              <p>✅ Copy emails to your preferred email tool</p>
+              <p>✅ Use the Send feature to launch campaigns</p>
+              <p>✅ Track your results and optimize based on performance</p>
+            </div>
+            <div className="flex space-x-3 mt-6">
+              <Link href="/send" className="btn-primary">
+                <Send className="w-4 h-4 mr-2" />
+                Launch Campaign
+              </Link>
+              <button
+                onClick={() => setIsEditing(true)}
+                className="btn-outline"
+              >
+                <Edit3 className="w-4 h-4 mr-2" />
+                Edit Emails
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

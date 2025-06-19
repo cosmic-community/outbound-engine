@@ -20,7 +20,8 @@ export default function GeneratePage() {
   const [apiKey, setApiKey] = useState<string>('');
   const [campaignSettings, setCampaignSettings] = useState({
     goal: 'book-demo' as GoalKey,
-    tone: 'professional' as ToneKey
+    tone: 'professional' as ToneKey,
+    emailCount: 5
   });
 
   const steps = [
@@ -88,7 +89,8 @@ export default function GeneratePage() {
         },
         body: JSON.stringify({
           ...workflowData,
-          apiKey
+          apiKey,
+          emailCount: campaignSettings.emailCount
         }),
       });
 
@@ -227,7 +229,7 @@ export default function GeneratePage() {
                       <h3 className="text-lg font-semibold">Campaign Settings</h3>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
                         <label htmlFor="goal" className="block text-sm font-medium mb-2">
                           Campaign Goal *
@@ -267,6 +269,26 @@ export default function GeneratePage() {
                           ))}
                         </select>
                       </div>
+
+                      <div>
+                        <label htmlFor="emailCount" className="block text-sm font-medium mb-2">
+                          Number of Emails *
+                        </label>
+                        <select
+                          id="emailCount"
+                          value={campaignSettings.emailCount}
+                          onChange={(e) => setCampaignSettings(prev => ({ ...prev, emailCount: Number(e.target.value) }))}
+                          className="select"
+                          disabled={isLoading}
+                          required
+                        >
+                          <option value={3}>3 emails</option>
+                          <option value={4}>4 emails</option>
+                          <option value={5}>5 emails</option>
+                          <option value={6}>6 emails</option>
+                          <option value={7}>7 emails</option>
+                        </select>
+                      </div>
                     </div>
 
                     {/* Summary */}
@@ -278,6 +300,7 @@ export default function GeneratePage() {
                           <p><strong>To:</strong> {prospectData.full_name} at {prospectData.company_name}</p>
                           <p><strong>Goal:</strong> {GOAL_OPTIONS[campaignSettings.goal]}</p>
                           <p><strong>Tone:</strong> {TONE_OPTIONS[campaignSettings.tone]}</p>
+                          <p><strong>Emails:</strong> {campaignSettings.emailCount} emails in sequence</p>
                         </div>
                       </div>
                     )}
