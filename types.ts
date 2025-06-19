@@ -132,8 +132,25 @@ export type GoalOption = SelectOption;
 export type ToneOption = SelectOption;
 export type WorkflowStatus = SelectOption;
 
-// Form data interface for workflow generation
+// Form data interface for workflow generation - UPDATED to match component usage
 export interface WorkflowFormData {
+  // Basic form fields that match the component
+  full_name: string;
+  email_address: string;
+  company_name: string;
+  job_title: string;
+  
+  // Campaign settings
+  industry: IndustryKey;
+  goal: GoalKey;
+  tone: ToneKey;
+  
+  // Optional fields
+  company_bio?: string;
+}
+
+// Extended form data interface for multi-step workflow generation
+export interface ExtendedWorkflowFormData {
   // Prospect information
   prospect_full_name: string;
   prospect_email_address: string;
@@ -183,7 +200,7 @@ export interface ApiKeyValidation {
 }
 
 // Workflow generation request interface
-export interface WorkflowGenerationRequest extends WorkflowFormData {
+export interface WorkflowGenerationRequest extends ExtendedWorkflowFormData {
   apiKey: string;
 }
 

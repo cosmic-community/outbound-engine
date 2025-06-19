@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { WorkflowFormData, UserProfile, ProspectData, FormStep, GOAL_OPTIONS, TONE_OPTIONS, GoalKey, ToneKey } from '@/types'
+import { ExtendedWorkflowFormData, UserProfile, ProspectData, FormStep, GOAL_OPTIONS, TONE_OPTIONS, GoalKey, ToneKey } from '@/types'
 import UserProfileForm from '@/components/UserProfileForm'
 import ProspectForm from '@/components/ProspectForm'
 import ApiKeyForm from '@/components/ApiKeyForm'
@@ -59,7 +59,7 @@ export default function GeneratePage() {
     setError(null);
 
     try {
-      const workflowData: WorkflowFormData = {
+      const workflowData: ExtendedWorkflowFormData = {
         // Prospect information
         prospect_full_name: prospectData.full_name,
         prospect_email_address: prospectData.email_address,
@@ -98,8 +98,12 @@ export default function GeneratePage() {
         throw new Error(result.error || 'Failed to generate workflow');
       }
 
-      // Redirect to results page
-      router.push(`/results/${result.workflow.slug}`);
+      // Check if result and result.workflow exist before accessing slug
+      if (result?.workflow?.slug) {
+        router.push(`/results/${result.workflow.slug}`);
+      } else {
+        throw new Error('Invalid response: missing workflow slug');
+      }
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -113,7 +117,7 @@ export default function GeneratePage() {
     const currentIndex = steps.findIndex(s => s.id === currentStep);
     
     // Only allow going to completed steps or the next step
-    if (targetIndex <= currentIndex || steps[targetIndex - 1]?.completed) {
+    if (targetIndex <= currentIndex || (steps[targetIndex - 1] && steps[targetIndex - 1].completed)) {
       setCurrentStep(step);
     }
   };
@@ -146,7 +150,7 @@ export default function GeneratePage() {
                 const Icon = step.icon;
                 const isActive = step.id === currentStep;
                 const isCompleted = step.completed;
-                const isClickable = isCompleted || index === 0 || steps[index - 1]?.completed;
+                const isClickable = isCompleted || index === 0 || (steps[index - 1] && steps[index - 1].completed);
 
                 return (
                   <div key={step.id} className="flex items-center">
