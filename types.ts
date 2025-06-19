@@ -123,30 +123,28 @@ export type WorkflowStatus = SelectOption;
 
 // Comprehensive form data interface that includes all fields used in the application
 export interface WorkflowFormData {
-  // Basic user information (matches CMS structure)
+  // Required core fields (matches CMS structure)
   full_name: string;
   email_address: string;
   company_name: string;
   job_title: string;
-  
-  // Sender information (for multi-step forms)
-  sender_full_name: string;
-  sender_email_address: string;
-  sender_company_name: string;
-  sender_job_title: string;
-  
-  // Prospect information (for multi-step forms)
-  prospect_full_name: string;
-  prospect_email_address: string;
-  prospect_company_name: string;
-  prospect_job_title: string;
-  
-  // Campaign settings
   industry: IndustryKey;
   goal: GoalKey;
   tone: ToneKey;
   
-  // Optional fields
+  // Optional sender information (for multi-step forms)
+  sender_full_name?: string;
+  sender_email_address?: string;
+  sender_company_name?: string;
+  sender_job_title?: string;
+  
+  // Optional prospect information (for multi-step forms)
+  prospect_full_name?: string;
+  prospect_email_address?: string;
+  prospect_company_name?: string;
+  prospect_job_title?: string;
+  
+  // Optional additional fields
   company_bio?: string;
   emailCount?: number;
 }
