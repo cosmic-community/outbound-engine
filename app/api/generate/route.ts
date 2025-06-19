@@ -46,15 +46,30 @@ export async function POST(request: NextRequest) {
     const user = await createOrFindUser(formData);
     console.log('User created/found:', user.id);
 
-    // Map form data to WorkflowFormData format for generateWorkflow function
+    // Map form data to WorkflowFormData format - this object now includes all required fields
     const workflowFormData = {
+      // Required fields for WorkflowFormData interface
       full_name: formData.prospect_full_name || "",
       email_address: formData.prospect_email_address || "",
       company_name: formData.prospect_company_name || "",
       job_title: formData.prospect_job_title || "",
+      
+      // Additional fields
       industry: formData.industry || "",
       goal: formData.goal || "",
-      tone: formData.tone || ""
+      tone: formData.tone || "",
+      
+      // Optional fields from the original object
+      emailCount: formData.emailCount,
+      prospect_full_name: formData.prospect_full_name || "",
+      prospect_email_address: formData.prospect_email_address || "",
+      prospect_company_name: formData.prospect_company_name || "",
+      prospect_job_title: formData.prospect_job_title || "",
+      sender_full_name: formData.sender_full_name || "",
+      sender_email_address: formData.sender_email_address || "",
+      sender_company_name: formData.sender_company_name || "",
+      sender_job_title: formData.sender_job_title || "",
+      company_bio: formData.company_bio
     };
 
     // Generate AI workflow using the provided API key
