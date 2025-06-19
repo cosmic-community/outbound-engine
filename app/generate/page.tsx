@@ -99,7 +99,7 @@ export default function GeneratePage() {
       }
 
       // Check if result and result.workflow exist before accessing slug
-      if (result?.workflow?.slug) {
+      if (result && result.workflow && result.workflow.slug) {
         router.push(`/results/${result.workflow.slug}`);
       } else {
         throw new Error('Invalid response: missing workflow slug');
@@ -270,15 +270,17 @@ export default function GeneratePage() {
                     </div>
 
                     {/* Summary */}
-                    <div className="p-4 bg-muted/50 rounded-lg">
-                      <h4 className="font-medium mb-2">Campaign Summary</h4>
-                      <div className="text-sm text-muted-foreground space-y-1">
-                        <p><strong>From:</strong> {userProfile?.full_name} at {userProfile?.company_name}</p>
-                        <p><strong>To:</strong> {prospectData?.full_name} at {prospectData?.company_name}</p>
-                        <p><strong>Goal:</strong> {GOAL_OPTIONS[campaignSettings.goal]}</p>
-                        <p><strong>Tone:</strong> {TONE_OPTIONS[campaignSettings.tone]}</p>
+                    {userProfile && prospectData && (
+                      <div className="p-4 bg-muted/50 rounded-lg">
+                        <h4 className="font-medium mb-2">Campaign Summary</h4>
+                        <div className="text-sm text-muted-foreground space-y-1">
+                          <p><strong>From:</strong> {userProfile.full_name} at {userProfile.company_name}</p>
+                          <p><strong>To:</strong> {prospectData.full_name} at {prospectData.company_name}</p>
+                          <p><strong>Goal:</strong> {GOAL_OPTIONS[campaignSettings.goal]}</p>
+                          <p><strong>Tone:</strong> {TONE_OPTIONS[campaignSettings.tone]}</p>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
 
                   <div className="flex justify-between pt-4">

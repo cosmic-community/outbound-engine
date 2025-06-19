@@ -76,24 +76,13 @@ export interface ProspectData {
 export interface EmailWorkflow extends CosmicObject {
   type_slug: 'email-workflows';
   metadata: {
-    // Prospect information
-    prospect_full_name: string;
-    prospect_email_address: string;
-    prospect_company_name: string;
-    prospect_job_title: string;
-    
-    // Sender information
-    sender_full_name: string;
-    sender_email_address: string;
-    sender_company_name: string;
-    sender_job_title: string;
-    
-    // Campaign settings
+    full_name: string;
+    email_address: string;
+    company_name: string;
+    job_title: string;
     industry: IndustryOption;
     goal: GoalOption;
     tone: ToneOption;
-    
-    // Generated content
     generated_workflow?: GeneratedWorkflow;
     status: WorkflowStatus;
     generation_date?: string;
@@ -132,13 +121,25 @@ export type GoalOption = SelectOption;
 export type ToneOption = SelectOption;
 export type WorkflowStatus = SelectOption;
 
-// Form data interface for workflow generation - UPDATED to match component usage
+// Form data interface that matches the actual CMS structure and component usage
 export interface WorkflowFormData {
-  // Basic form fields that match the component
+  // Core fields that match CMS email-workflows metafields
   full_name: string;
   email_address: string;
   company_name: string;
   job_title: string;
+  
+  // Prospect information (extended for multi-prospect workflows)
+  prospect_full_name: string;
+  prospect_email_address: string;
+  prospect_company_name: string;
+  prospect_job_title: string;
+  
+  // Sender information (extended for detailed sender data)
+  sender_full_name: string;
+  sender_email_address: string;
+  sender_company_name: string;
+  sender_job_title: string;
   
   // Campaign settings
   industry: IndustryKey;
