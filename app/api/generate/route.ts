@@ -46,12 +46,23 @@ export async function POST(request: NextRequest) {
     const user = await createOrFindUser(formData);
     console.log('User created/found:', user.id);
 
+    // Map form data to WorkflowFormData format for generateWorkflow function
+    const workflowFormData = {
+      full_name: formData.prospect_full_name || "",
+      email_address: formData.prospect_email_address || "",
+      company_name: formData.prospect_company_name || "",
+      job_title: formData.prospect_job_title || "",
+      industry: formData.industry || "",
+      goal: formData.goal || "",
+      tone: formData.tone || ""
+    };
+
     // Generate AI workflow using the provided API key
-    const generatedWorkflow = await generateWorkflow(formData, apiKey);
+    const generatedWorkflow = await generateWorkflow(workflowFormData, apiKey);
     console.log('Workflow generated successfully');
 
-    // Create email workflow record
-    const workflow = await createEmailWorkflow(formData, generatedWorkflow);
+    // Create email workflow record using the mapped data
+    const workflow = await createEmailWorkflow(workflowFormData, generatedWorkflow);
     console.log('Workflow saved to CMS:', workflow.id);
 
     return NextResponse.json({
