@@ -42,8 +42,21 @@ export default function WorkflowForm() {
     }
 
     try {
+      // Transform to extended format for API compatibility
       const requestBody = {
-        ...formData,
+        // Map basic form data to extended format for backwards compatibility
+        prospect_full_name: formData.full_name,
+        prospect_email_address: formData.email_address,
+        prospect_company_name: formData.company_name,
+        prospect_job_title: formData.job_title,
+        sender_full_name: formData.full_name,
+        sender_email_address: formData.email_address,
+        sender_company_name: formData.company_name,
+        sender_job_title: formData.job_title,
+        industry: formData.industry,
+        goal: formData.goal,
+        tone: formData.tone,
+        company_bio: formData.company_bio,
         apiKey: apiKey.trim()
       };
 
@@ -62,7 +75,11 @@ export default function WorkflowForm() {
       }
 
       // Redirect to results page
-      router.push(`/results/${result.workflow.slug}`);
+      if (result?.workflow?.slug) {
+        router.push(`/results/${result.workflow.slug}`);
+      } else {
+        throw new Error('Invalid response: missing workflow slug');
+      }
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');

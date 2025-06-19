@@ -121,32 +121,15 @@ export type GoalOption = SelectOption;
 export type ToneOption = SelectOption;
 export type WorkflowStatus = SelectOption;
 
-// Form data interface that matches the actual CMS structure and component usage
+// Basic form data interface that matches the original CMS structure
 export interface WorkflowFormData {
-  // Core fields that match CMS email-workflows metafields
   full_name: string;
   email_address: string;
   company_name: string;
   job_title: string;
-  
-  // Prospect information (extended for multi-prospect workflows)
-  prospect_full_name: string;
-  prospect_email_address: string;
-  prospect_company_name: string;
-  prospect_job_title: string;
-  
-  // Sender information (extended for detailed sender data)
-  sender_full_name: string;
-  sender_email_address: string;
-  sender_company_name: string;
-  sender_job_title: string;
-  
-  // Campaign settings
   industry: IndustryKey;
   goal: GoalKey;
   tone: ToneKey;
-  
-  // Optional fields
   company_bio?: string;
 }
 
@@ -203,6 +186,7 @@ export interface ApiKeyValidation {
 // Workflow generation request interface
 export interface WorkflowGenerationRequest extends ExtendedWorkflowFormData {
   apiKey: string;
+  emailCount?: number;
 }
 
 // Type guards
