@@ -1,16 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createOrFindUser, generateAIWorkflow, createEmailWorkflow } from '@/lib/cosmic'
-import { WorkflowFormData } from '@/types'
+import { createOrFindUser, generateWorkflow, createEmailWorkflow } from '@/lib/cosmic'
+import { WorkflowGenerationRequest } from '@/types'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { apiKey, ...formData }: { apiKey?: string } & WorkflowFormData = body;
+    const { apiKey, ...formData }: WorkflowGenerationRequest = body;
 
     // Validate required fields
-    const requiredFields = ['full_name', 'email_address', 'company_name', 'job_title', 'industry', 'goal', 'tone'];
+    const requiredFields = [
+      'prospect_full_name', 'prospect_email_address', 'prospect_company_name', 'prospect_job_title',
+      'sender_full_name', 'sender_email_address', 'sender_company_name', 'sender_job_title',
+      'industry', 'goal', 'tone'
+    ];
+    
     for (const field of requiredFields) {
-      if (!formData[field as keyof WorkflowFormData]) {
+      if (!formData[field as keyof typeof formData]) {
         return NextResponse.json(
           { error: `Missing required field: ${field}` },
           { status: 400 }
@@ -35,14 +40,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('Starting workflow generation for:', formData.email_address);
+    console.log('Starting workflow generation for:', formData.prospect_email_address);
 
     // Create or find user
     const user = await createOrFindUser(formData);
     console.log('User created/found:', user.id);
 
     // Generate AI workflow using the provided API key
-    const generatedWorkflow = await generateAIWorkflow({ ...formData, apiKey });
+    const generatedWorkflow = await generateWorkflow(formData, apiKey);
     console.log('Workflow generated successfully');
 
     // Create email workflow record
@@ -70,10 +75,12 @@ export async function POST(request: NextRequest) {
       errorMessage = error.message;
       
       // Handle specific OpenAI API errors
-      if (errorMessage.includes('OpenAI API Error')) {
-        statusCode = 400;
-      } else if (errorMessage.includes('API key')) {
+      if (errorMessage.includes('Invalid API key')) {
         statusCode = 401;
+      } else if (errorMessage.includes('Rate limit')) {
+        statusCode = 429;
+      } else if (errorMessage.includes('quota')) {
+        statusCode = 402;
       }
     }
     

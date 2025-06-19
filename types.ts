@@ -49,17 +49,51 @@ export interface User extends CosmicObject {
   };
 }
 
+// User Profile interface for form handling
+export interface UserProfile {
+  full_name: string;
+  email_address: string;
+  company_name: string;
+  job_title: string;
+  company_bio?: string;
+  industry: IndustryKey;
+  phone?: string;
+  website?: string;
+}
+
+// Prospect interface for form handling
+export interface ProspectData {
+  full_name: string;
+  email_address: string;
+  company_name: string;
+  job_title: string;
+  industry: IndustryKey;
+  linkedin_url?: string;
+  notes?: string;
+}
+
 // Email Workflow interface
 export interface EmailWorkflow extends CosmicObject {
   type_slug: 'email-workflows';
   metadata: {
-    full_name: string;
-    email_address: string;
-    company_name: string;
-    job_title: string;
+    // Prospect information
+    prospect_full_name: string;
+    prospect_email_address: string;
+    prospect_company_name: string;
+    prospect_job_title: string;
+    
+    // Sender information
+    sender_full_name: string;
+    sender_email_address: string;
+    sender_company_name: string;
+    sender_job_title: string;
+    
+    // Campaign settings
     industry: IndustryOption;
     goal: GoalOption;
     tone: ToneOption;
+    
+    // Generated content
     generated_workflow?: GeneratedWorkflow;
     status: WorkflowStatus;
     generation_date?: string;
@@ -98,15 +132,36 @@ export type GoalOption = SelectOption;
 export type ToneOption = SelectOption;
 export type WorkflowStatus = SelectOption;
 
-// Form data interface
+// Form data interface for workflow generation
 export interface WorkflowFormData {
-  full_name: string;
-  email_address: string;
-  company_name: string;
-  job_title: string;
+  // Prospect information
+  prospect_full_name: string;
+  prospect_email_address: string;
+  prospect_company_name: string;
+  prospect_job_title: string;
+  
+  // Sender information  
+  sender_full_name: string;
+  sender_email_address: string;
+  sender_company_name: string;
+  sender_job_title: string;
+  
+  // Campaign settings
   industry: IndustryKey;
   goal: GoalKey;
   tone: ToneKey;
+  
+  // Optional fields
+  company_bio?: string;
+}
+
+// Form step enumeration
+export enum FormStep {
+  USER_PROFILE = 'user-profile',
+  PROSPECT_INFO = 'prospect-info',
+  API_KEY = 'api-key',
+  CAMPAIGN_SETTINGS = 'campaign-settings',
+  REVIEW = 'review'
 }
 
 // API response interfaces
@@ -119,6 +174,17 @@ export interface CosmicResponse<T> {
 
 export interface CosmicSingleResponse<T> {
   object: T;
+}
+
+// API Key validation interface
+export interface ApiKeyValidation {
+  isValid: boolean;
+  error?: string;
+}
+
+// Workflow generation request interface
+export interface WorkflowGenerationRequest extends WorkflowFormData {
+  apiKey: string;
 }
 
 // Type guards
@@ -166,3 +232,10 @@ export const STATUS_OPTIONS: Record<WorkflowStatusKey, string> = {
   'edited': 'Edited',
   'exported': 'Exported'
 };
+
+// Form validation schemas (basic)
+export const REQUIRED_FIELDS = {
+  userProfile: ['full_name', 'email_address', 'company_name', 'job_title', 'industry'],
+  prospectInfo: ['full_name', 'email_address', 'company_name', 'job_title'],
+  campaignSettings: ['goal', 'tone']
+} as const;
