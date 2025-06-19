@@ -4,7 +4,8 @@ import { WorkflowFormData } from '@/types'
 
 export async function POST(request: NextRequest) {
   try {
-    const formData: WorkflowFormData = await request.json();
+    const body = await request.json();
+    const { apiKey, ...formData }: { apiKey?: string } & WorkflowFormData = body;
 
     // Validate required fields
     const requiredFields = ['full_name', 'email_address', 'company_name', 'job_title', 'industry', 'goal', 'tone'];
@@ -32,8 +33,8 @@ export async function POST(request: NextRequest) {
     const user = await createOrFindUser(formData);
     console.log('User created/found:', user.id);
 
-    // Generate AI workflow
-    const generatedWorkflow = await generateAIWorkflow(formData);
+    // Generate AI workflow with optional API key
+    const generatedWorkflow = await generateAIWorkflow(formData, apiKey);
     console.log('Workflow generated successfully');
 
     // Create email workflow record

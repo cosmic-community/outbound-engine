@@ -3,12 +3,14 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { WorkflowFormData, INDUSTRY_OPTIONS, GOAL_OPTIONS, TONE_OPTIONS, IndustryKey, GoalKey, ToneKey } from '@/types'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Key, Eye, EyeOff } from 'lucide-react'
 
 export default function WorkflowForm() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [apiKey, setApiKey] = useState('');
   const [formData, setFormData] = useState<WorkflowFormData>({
     full_name: '',
     email_address: '',
@@ -33,12 +35,17 @@ export default function WorkflowForm() {
     setError(null);
 
     try {
+      const requestBody = {
+        ...formData,
+        ...(apiKey && { apiKey })
+      };
+
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(requestBody),
       });
 
       const result = await response.json();
@@ -64,6 +71,38 @@ export default function WorkflowForm() {
           {error}
         </div>
       )}
+
+      {/* API Key Section */}
+      <div className="space-y-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <div className="flex items-center space-x-2">
+          <Key className="w-5 h-5 text-blue-600" />
+          <h3 className="text-lg font-medium text-blue-900">OpenAI API Key (Optional)</h3>
+        </div>
+        <p className="text-sm text-blue-700">
+          Provide your own OpenAI API key for unlimited generations. If not provided, we'll use our default key (subject to rate limits).
+        </p>
+        <div className="relative">
+          <input
+            type={showApiKey ? "text" : "password"}
+            id="apiKey"
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            placeholder="sk-..."
+            className="input pr-10"
+          />
+          <button
+            type="button"
+            onClick={() => setShowApiKey(!showApiKey)}
+            className="absolute inset-y-0 right-0 pr-3 flex items-center"
+          >
+            {showApiKey ? (
+              <EyeOff className="h-4 w-4 text-gray-400" />
+            ) : (
+              <Eye className="h-4 w-4 text-gray-400" />
+            )}
+          </button>
+        </div>
+      </div>
 
       {/* Personal Information */}
       <div className="space-y-4">
