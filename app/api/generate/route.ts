@@ -33,8 +33,16 @@ export async function POST(request: NextRequest) {
     const user = await createOrFindUser(formData);
     console.log('User created/found:', user.id);
 
-    // Generate AI workflow
-    const generatedWorkflow = await generateAIWorkflow(formData);
+    // Generate AI workflow using the provided API key or environment variable
+    const openaiApiKey = apiKey || process.env.OPENAI_API_KEY;
+    if (!openaiApiKey) {
+      return NextResponse.json(
+        { error: 'OpenAI API key is required' },
+        { status: 400 }
+      );
+    }
+
+    const generatedWorkflow = await generateAIWorkflow(formData, openaiApiKey);
     console.log('Workflow generated successfully');
 
     // Create email workflow record
