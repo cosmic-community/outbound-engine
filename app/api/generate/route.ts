@@ -17,14 +17,28 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Validate environment variables
+    if (!process.env.COSMIC_BUCKET_SLUG || !process.env.COSMIC_READ_KEY || !process.env.COSMIC_WRITE_KEY) {
+      console.error('Missing Cosmic CMS environment variables');
+      return NextResponse.json(
+        { error: 'Server configuration error - missing CMS credentials' },
+        { status: 500 }
+      );
+    }
+
+    console.log('Starting workflow generation for:', formData.email_address);
+
     // Create or find user
     const user = await createOrFindUser(formData);
+    console.log('User created/found:', user.id);
 
     // Generate AI workflow
     const generatedWorkflow = await generateAIWorkflow(formData);
+    console.log('Workflow generated successfully');
 
     // Create email workflow record
     const workflow = await createEmailWorkflow(formData, generatedWorkflow);
+    console.log('Workflow saved to CMS:', workflow.id);
 
     return NextResponse.json({
       success: true,
@@ -38,8 +52,15 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error generating workflow:', error);
+    
+    // Return more specific error messages
+    let errorMessage = 'Failed to generate workflow';
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to generate workflow' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

@@ -26,6 +26,7 @@ export interface AppSettings extends CosmicObject {
       linkedin?: string;
       github?: string;
     };
+    company_bio?: string;
   };
 }
 
