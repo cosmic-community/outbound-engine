@@ -27,22 +27,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate API key
+    if (!apiKey) {
+      return NextResponse.json(
+        { error: 'OpenAI API key is required. Please provide your API key.' },
+        { status: 400 }
+      );
+    }
+
     console.log('Starting workflow generation for:', formData.email_address);
 
     // Create or find user
     const user = await createOrFindUser(formData);
     console.log('User created/found:', user.id);
 
-    // Generate AI workflow using the provided API key or environment variable
-    const openaiApiKey = apiKey || process.env.OPENAI_API_KEY;
-    if (!openaiApiKey) {
-      return NextResponse.json(
-        { error: 'OpenAI API key is required' },
-        { status: 400 }
-      );
-    }
-
-    const generatedWorkflow = await generateAIWorkflow(formData, openaiApiKey);
+    // Generate AI workflow using the provided API key
+    const generatedWorkflow = await generateAIWorkflow({ ...formData, apiKey });
     console.log('Workflow generated successfully');
 
     // Create email workflow record
@@ -64,13 +64,22 @@ export async function POST(request: NextRequest) {
     
     // Return more specific error messages
     let errorMessage = 'Failed to generate workflow';
+    let statusCode = 500;
+    
     if (error instanceof Error) {
       errorMessage = error.message;
+      
+      // Handle specific OpenAI API errors
+      if (errorMessage.includes('OpenAI API Error')) {
+        statusCode = 400;
+      } else if (errorMessage.includes('API key')) {
+        statusCode = 401;
+      }
     }
     
     return NextResponse.json(
       { error: errorMessage },
-      { status: 500 }
+      { status: statusCode }
     );
   }
 }

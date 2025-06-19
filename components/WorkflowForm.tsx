@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { WorkflowFormData, INDUSTRY_OPTIONS, GOAL_OPTIONS, TONE_OPTIONS, IndustryKey, GoalKey, ToneKey } from '@/types'
-import { Loader2, Key, Eye, EyeOff } from 'lucide-react'
+import { Loader2, Key, Eye, EyeOff, AlertCircle } from 'lucide-react'
 
 export default function WorkflowForm() {
   const router = useRouter();
@@ -34,10 +34,17 @@ export default function WorkflowForm() {
     setIsLoading(true);
     setError(null);
 
+    // Validate API key is provided
+    if (!apiKey.trim()) {
+      setError('OpenAI API key is required to generate your email sequence.');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const requestBody = {
         ...formData,
-        ...(apiKey && { apiKey })
+        apiKey: apiKey.trim()
       };
 
       const response = await fetch('/api/generate', {
@@ -68,7 +75,10 @@ export default function WorkflowForm() {
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-          {error}
+          <div className="flex items-center space-x-2">
+            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+            <span>{error}</span>
+          </div>
         </div>
       )}
 
@@ -76,10 +86,18 @@ export default function WorkflowForm() {
       <div className="space-y-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
         <div className="flex items-center space-x-2">
           <Key className="w-5 h-5 text-blue-600" />
-          <h3 className="text-lg font-medium text-blue-900">OpenAI API Key (Optional)</h3>
+          <h3 className="text-lg font-medium text-blue-900">OpenAI API Key (Required)</h3>
         </div>
         <p className="text-sm text-blue-700">
-          Provide your own OpenAI API key for unlimited generations. If not provided, we'll use our default key (subject to rate limits).
+          To generate your personalized email sequence, please provide your OpenAI API key. 
+          <a 
+            href="https://platform.openai.com/api-keys" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="underline hover:no-underline ml-1"
+          >
+            Get your API key here
+          </a>
         </p>
         <div className="relative">
           <input
@@ -88,7 +106,8 @@ export default function WorkflowForm() {
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
             placeholder="sk-..."
-            className="input pr-10"
+            className="input pr-10 font-mono text-sm"
+            required
           />
           <button
             type="button"
@@ -102,6 +121,9 @@ export default function WorkflowForm() {
             )}
           </button>
         </div>
+        <p className="text-xs text-blue-600">
+          Your API key is sent securely to OpenAI and is never stored on our servers.
+        </p>
       </div>
 
       {/* Personal Information */}
