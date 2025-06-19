@@ -100,8 +100,8 @@ export default function GeneratePage() {
         throw new Error(result.error || 'Failed to generate workflow');
       }
 
-      // Fix TS2532: Check if result and result.workflow exist before accessing slug
-      if (result && result.workflow && result.workflow.slug) {
+      // Fix TS2532: Add proper null checks before accessing nested properties
+      if (result?.workflow?.slug) {
         router.push(`/results/${result.workflow.slug}`);
       } else {
         throw new Error('Invalid response: missing workflow slug');
