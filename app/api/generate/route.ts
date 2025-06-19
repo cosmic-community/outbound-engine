@@ -33,8 +33,8 @@ export async function POST(request: NextRequest) {
     const user = await createOrFindUser(formData);
     console.log('User created/found:', user.id);
 
-    // Generate AI workflow with optional API key
-    const generatedWorkflow = await generateAIWorkflow(formData, apiKey);
+    // Generate AI workflow
+    const generatedWorkflow = await generateAIWorkflow(formData);
     console.log('Workflow generated successfully');
 
     // Create email workflow record
