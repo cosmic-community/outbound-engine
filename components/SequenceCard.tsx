@@ -56,7 +56,7 @@ export default function SequenceCard({ sequence }: SequenceCardProps) {
 
           <div className="flex items-center text-sm text-gray-600">
             <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
-            <span>Created {formatDate(sequence.created)}</span>
+            <span>Created {formatDate(sequence.created_at)}</span>
           </div>
         </div>
 
