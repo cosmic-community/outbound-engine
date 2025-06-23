@@ -18,12 +18,12 @@ export default function SequenceResults({ sequence, emailSteps }: SequenceResult
   const copyToClipboard = async (text: string, stepId: string) => {
     try {
       await navigator.clipboard.writeText(text)
-      setCopiedSteps(prev => new Set([...prev, stepId]))
+      setCopiedSteps(prev => new Set([...Array.from(prev), stepId]))
       
       // Reset copied state after 2 seconds
       setTimeout(() => {
         setCopiedSteps(prev => {
-          const newSet = new Set(prev)
+          const newSet = new Set(Array.from(prev))
           newSet.delete(stepId)
           return newSet
         })
