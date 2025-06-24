@@ -3,17 +3,17 @@
 
 🎯 **Enter a few details. Get a full email sequence.**
 
-Outbound Engine is an AI-powered sales automation platform that creates personalized email workflows based on your target prospect information. Simply provide basic details about yourself and your goal, and our AI will generate a complete 5-step cold email sequence tailored to your needs.
+Outbound Engine is a Cosmic AI-powered sales automation platform that creates personalized email workflows based on your target prospect information. Simply provide basic details about yourself and your goal, and our Cosmic AI will generate a complete 5-step cold email sequence tailored to your needs.
 
 ## Features
 
-- 🤖 **AI-Generated Email Sequences** - Create personalized 5-step email workflows instantly
+- 🤖 **Cosmic AI-Generated Email Sequences** - Create personalized 5-step email workflows instantly using Cosmic's advanced AI
 - 📧 **Multiple Templates** - Choose from various tones (Friendly, Professional, Direct, Funny)
 - 🎯 **Goal-Oriented** - Sequences optimized for booking demos, raising awareness, or closing deals
 - 📋 **Copy & Export** - Easily copy individual emails or export entire sequences
 - 💾 **Workflow Storage** - Save and manage your generated sequences
 - 📱 **Responsive Design** - Works perfectly on desktop and mobile devices
-- ⚡ **Real-time Generation** - Get your complete sequence in seconds
+- ⚡ **Real-time Generation** - Get your complete sequence in seconds powered by Cosmic AI
 
 ## Clone this Bucket
 
@@ -29,14 +29,14 @@ This application was built based on the following request:
 
 > I want to build a web app called "Outbound Engine" that creates custom AI-generated email workflows based on a few user inputs. Please build both the frontend and backend for this app, using modern React (with Tailwind), and Cosmic for content management and storage.
 
-The app has been tailored to work with your existing Cosmic content structure and includes all the features requested above.
+The app has been tailored to work with your existing Cosmic content structure and includes all the features requested above, powered by Cosmic AI for intelligent content generation.
 
 ## Technologies Used
 
 - **Frontend**: Next.js 15, React 18, TypeScript
 - **Styling**: Tailwind CSS
 - **Content Management**: [Cosmic](https://www.cosmicjs.com)
-- **AI Integration**: Cosmic AI SDK for text generation
+- **AI Integration**: Cosmic AI SDK for intelligent text generation
 - **Package Manager**: Bun
 - **Deployment**: Vercel-ready
 
@@ -109,7 +109,7 @@ await cosmic.objects.insertOne({
 })
 ```
 
-### AI Text Generation
+### Cosmic AI Text Generation
 ```typescript
 const aiResponse = await cosmic.ai.generateText({
   prompt: `Create a 5-step cold email sequence for ${jobTitle} at ${companyName}...`,
@@ -127,7 +127,7 @@ This app leverages several Cosmic content models:
 - **Sender Profiles**: User/sender information
 - **Email Templates**: Reusable email templates
 
-All data is stored and managed through [Cosmic's headless CMS](https://www.cosmicjs.com/docs), providing a powerful admin interface for content management.
+All data is stored and managed through [Cosmic's headless CMS](https://www.cosmicjs.com/docs), providing a powerful admin interface for content management, with intelligent content generation powered by Cosmic AI.
 
 ## Deployment Options
 
