@@ -281,78 +281,20 @@ function createTemplateSequence(formData: EmailSequenceFormData): GeneratedSeque
   };
 }
 
-// Generate email sequence using AI with fallback to templates
+// Generate email sequence using template-based generation
 export async function generateEmailSequence(formData: EmailSequenceFormData): Promise<GeneratedSequence> {
   console.log('Starting email sequence generation for:', formData.full_name);
 
-  // First, try to use AI generation
   try {
-    console.log('Attempting AI generation...');
-    
-    const prompt = `Create a professional 5-step cold email sequence for reaching out to ${formData.full_name}, who is a ${formData.job_title} at ${formData.company_name} in the ${formData.industry} industry.
-
-Requirements:
-- Tone: ${formData.tone}
-- Goal: ${formData.goal}
-- Each email should build on the previous one
-- Include timing for when to send each email
-- Professional but ${formData.tone} tone
-- Focus on achieving: ${formData.goal}
-
-Format the response as valid JSON:
-{
-  "steps": [
-    {
-      "step_number": 1,
-      "subject_line": "Subject line here",
-      "email_body": "Email body with HTML formatting",
-      "timing": "Day 1 - Send immediately"
-    }
-  ]
-}
-
-Create exactly 5 steps with appropriate timing (Day 1, Day 4, Day 7, Day 11, Day 15).`;
-
-    const aiResponse = await cosmic.ai.generateText({
-      prompt: prompt,
-      max_tokens: 3000
-    });
-
-    console.log('AI response received, parsing...');
-
-    if (aiResponse && aiResponse.text) {
-      // Try to extract and parse JSON from the response
-      const responseText = aiResponse.text.trim();
-      let jsonMatch = responseText.match(/\{[\s\S]*\}/);
-      
-      if (jsonMatch) {
-        try {
-          const parsedResponse = JSON.parse(jsonMatch[0]);
-          
-          if (parsedResponse.steps && Array.isArray(parsedResponse.steps) && parsedResponse.steps.length >= 5) {
-            console.log('AI generation successful!');
-            return {
-              steps: parsedResponse.steps.slice(0, 5), // Ensure exactly 5 steps
-              metadata: {
-                prospect_name: formData.full_name,
-                company_name: formData.company_name,
-                tone: formData.tone,
-                goal: formData.goal
-              }
-            };
-          }
-        } catch (parseError) {
-          console.log('Failed to parse AI response, using template fallback');
-        }
-      }
-    }
-  } catch (aiError) {
-    console.log('AI generation failed, using template fallback:', aiError);
+    // Use template-based generation for reliable results
+    console.log('Using template-based generation...');
+    const sequence = createTemplateSequence(formData);
+    console.log('Email sequence generated successfully');
+    return sequence;
+  } catch (error) {
+    console.error('Error generating email sequence:', error);
+    throw new Error('Failed to generate email sequence');
   }
-
-  // Fallback to template-based generation
-  console.log('Using template-based generation...');
-  return createTemplateSequence(formData);
 }
 
 // Save generated sequence to Cosmic
