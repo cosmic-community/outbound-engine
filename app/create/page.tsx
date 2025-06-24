@@ -24,10 +24,13 @@ export default function CreateSequencePage() {
       if (result.success && result.data) {
         console.log('Sequence generation successful:', result.data)
         
-        if (result.data.redirect_url) {
-          router.push(result.data.redirect_url)
-        } else if (result.data.sequence?.slug) {
-          router.push(`/results/${result.data.sequence.slug}`)
+        // Type guard to check if result.data has the expected properties
+        const data = result.data as { redirect_url?: string; sequence?: { slug: string } }
+        
+        if (data.redirect_url) {
+          router.push(data.redirect_url)
+        } else if (data.sequence?.slug) {
+          router.push(`/results/${data.sequence.slug}`)
         } else {
           throw new Error('No redirect URL provided in response')
         }

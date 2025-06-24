@@ -69,6 +69,11 @@ export function generateSequenceFromTemplate(formData: EmailSequenceFormData): G
   const toneConfig = toneAdjustments[tone] || toneAdjustments.friendly
   const goalConfig = goalTemplates[goal] || goalTemplates.book_demo
 
+  // Ensure we have valid configs - this should never happen due to fallbacks above, but TypeScript needs to be sure
+  if (!toneConfig || !goalConfig) {
+    throw new Error('Invalid tone or goal configuration')
+  }
+
   const steps = [
     {
       step_number: 1,
