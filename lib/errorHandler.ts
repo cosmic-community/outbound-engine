@@ -11,8 +11,8 @@ export class ApiErrorHandler {
   static handle(error: unknown): NextResponse {
     console.error('API Error:', error)
 
-    // Handle known API errors
-    if (error instanceof ApiError) {
+    // Handle known API errors using type guard
+    if (this.isApiError(error)) {
       return NextResponse.json(
         { 
           error: error.message, 
@@ -59,11 +59,22 @@ export class ApiErrorHandler {
     )
   }
 
+  private static isApiError(error: unknown): error is ApiError {
+    return typeof error === 'object' && 
+           error !== null && 
+           'message' in error && 
+           'status' in error &&
+           typeof (error as any).message === 'string' &&
+           typeof (error as any).status === 'number'
+  }
+
   private static isCosmicError(error: unknown): error is { status: number; message: string } {
     return typeof error === 'object' && 
            error !== null && 
            'status' in error && 
-           'message' in error
+           'message' in error &&
+           typeof (error as any).status === 'number' &&
+           typeof (error as any).message === 'string'
   }
 
   private static handleCosmicError(error: { status: number; message: string }): NextResponse {
