@@ -4,8 +4,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import SequenceForm from '@/components/SequenceForm'
 import LoadingSpinner from '@/components/LoadingSpinner'
-import { EmailSequenceFormData, GeneratedSequence } from '@/types'
-import { generateEmailSequence, createProspect, getActiveSenderProfile, saveEmailSequence } from '@/lib/cosmic'
+import { EmailSequenceFormData } from '@/types'
+import { generateSequenceAPI } from '@/utils/apiHelpers'
 
 export default function CreateSequencePage() {
   const [isLoading, setIsLoading] = useState(false)
@@ -17,31 +17,24 @@ export default function CreateSequencePage() {
     setError(null)
 
     try {
-      // Generate the email sequence using AI
-      const generatedSequence = await generateEmailSequence(formData)
+      console.log('Submitting form data:', formData)
       
-      // Create prospect record
-      const prospect = await createProspect({
-        full_name: formData.full_name,
-        email_address: formData.email_address,
-        job_title: formData.job_title,
-        company_name: formData.company_name,
-        company_industry: formData.industry
-      })
-
-      // Get active sender profile
-      const senderProfile = await getActiveSenderProfile()
-
-      // Save the sequence to Cosmic
-      const savedSequence = await saveEmailSequence(
-        generatedSequence,
-        formData,
-        prospect.id,
-        senderProfile?.id
-      )
-
-      // Redirect to results page
-      router.push(`/results/${savedSequence.slug}`)
+      const result = await generateSequenceAPI(formData)
+      
+      if (result.success && result.data) {
+        console.log('Sequence generation successful:', result.data)
+        
+        if (result.data.redirect_url) {
+          router.push(result.data.redirect_url)
+        } else if (result.data.sequence?.slug) {
+          router.push(`/results/${result.data.sequence.slug}`)
+        } else {
+          throw new Error('No redirect URL provided in response')
+        }
+      } else {
+        console.error('Sequence generation failed:', result.error)
+        setError(result.error || 'Failed to generate email sequence. Please try again.')
+      }
     } catch (error) {
       console.error('Error creating sequence:', error)
       setError('Failed to generate email sequence. Please try again.')
