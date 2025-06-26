@@ -8,7 +8,7 @@ export interface AIProvider {
   isAvailable(): boolean
 }
 
-// Cosmic AI Provider
+// Cosmic AI Provider with enhanced capabilities
 export class CosmicAIProvider implements AIProvider {
   name = 'Cosmic AI'
   private cosmic: ReturnType<typeof createBucketClient>
@@ -18,6 +18,7 @@ export class CosmicAIProvider implements AIProvider {
       bucketSlug: process.env.COSMIC_BUCKET_SLUG as string,
       readKey: process.env.COSMIC_READ_KEY as string,
       writeKey: process.env.COSMIC_WRITE_KEY as string,
+      apiEnvironment: "staging"
     })
   }
 
@@ -30,14 +31,14 @@ export class CosmicAIProvider implements AIProvider {
   }
 
   async generateSequence(formData: EmailSequenceFormData): Promise<GeneratedSequence> {
-    console.log('Using Cosmic AI for sequence generation')
+    console.log('Using Enhanced Cosmic AI for sequence generation')
 
-    const prompt = this.buildPrompt(formData)
+    const prompt = this.buildEnhancedPrompt(formData)
     
     try {
       const response = await this.cosmic.ai.generateText({
         prompt,
-        max_tokens: 2000
+        max_tokens: 3000 // Increased for better content
       })
 
       console.log('Cosmic AI response received, parsing...')
@@ -46,7 +47,7 @@ export class CosmicAIProvider implements AIProvider {
       const parsedSequence = this.parseResponse(response.text, formData)
       
       if (this.validateSequence(parsedSequence)) {
-        console.log('Cosmic AI generation successful')
+        console.log('Enhanced Cosmic AI generation successful')
         return parsedSequence
       } else {
         throw new Error('Invalid sequence structure from AI')
@@ -57,28 +58,63 @@ export class CosmicAIProvider implements AIProvider {
     }
   }
 
-  private buildPrompt(formData: EmailSequenceFormData): string {
-    return `Create a professional 5-step cold email sequence for reaching out to ${formData.full_name}, who is a ${formData.job_title} at ${formData.company_name} in the ${formData.industry} industry.
+  // Enhanced prompt building with industry-specific insights
+  private buildEnhancedPrompt(formData: EmailSequenceFormData): string {
+    const industryInsights = this.getIndustryInsights(formData.industry)
+    const goalStrategy = this.getGoalStrategy(formData.goal)
+    const toneGuidance = this.getToneGuidance(formData.tone)
 
-Campaign Goal: ${formData.goal}
-Email Tone: ${formData.tone}
+    return `You are an expert B2B email marketing specialist with deep knowledge of the ${formData.industry} industry. Create a highly personalized 5-step cold email sequence targeting ${formData.full_name}, a ${formData.job_title} at ${formData.company_name}.
 
-Please generate exactly 5 emails with the following structure for each:
-- Step number (1-5)
-- Subject line (engaging and relevant)
-- Email body (personalized HTML format with proper paragraphs)
-- Timing (when to send - Day 1, 4, 7, 11, 15)
+CONTEXT ANALYSIS:
+- Industry: ${formData.industry} ${industryInsights}
+- Target Role: ${formData.job_title}
+- Campaign Goal: ${formData.goal} ${goalStrategy}
+- Communication Style: ${formData.tone} ${toneGuidance}
 
-Make the emails ${formData.tone} in tone and focused on ${formData.goal}. Each email should build upon the previous one and include a clear call-to-action.
+SEQUENCE REQUIREMENTS:
+Create exactly 5 strategically timed emails:
 
-Format the response as a JSON object with this structure:
+1. INITIAL OUTREACH (Day 1)
+   - Hook: Industry-specific pain point or opportunity
+   - Credibility: Brief company introduction
+   - Soft CTA: Interest check
+
+2. VALUE DEMONSTRATION (Day 4)
+   - Social proof: Industry-relevant case study
+   - Specific benefits for ${formData.job_title} role
+   - Clear value proposition
+
+3. EDUCATIONAL CONTENT (Day 7)
+   - Industry insights or best practices
+   - Thought leadership positioning
+   - Helpful resource sharing
+
+4. DIRECT ENGAGEMENT (Day 11)
+   - Clear meeting request
+   - Specific time commitment (15-20 minutes)
+   - Multiple response options
+
+5. PROFESSIONAL CLOSE (Day 15)
+   - Respectful final attempt
+   - Door left open for future
+   - Valuable parting gift (resource/insight)
+
+FORMATTING REQUIREMENTS:
+- Professional HTML structure with <p> tags
+- Subject lines: 6-8 words, compelling but not spammy
+- Email body: 80-120 words per email
+- Personalization: Use ${formData.full_name} and ${formData.company_name}
+- CTA: Clear and specific to ${formData.goal}
+
+Return ONLY this JSON structure:
 {
   "steps": [
     {
       "step_number": 1,
       "subject_line": "...",
-      "email_body": "...",
-      "timing": "..."
+      "email_body": "<p>Hi ${formData.full_name},</p><p>...</p><p>Best regards,<br/>[Sender Name]</p>",
+      "timing": "Day 1 - Initial outreach"
     }
   ],
   "metadata": {
@@ -90,108 +126,47 @@ Format the response as a JSON object with this structure:
 }`
   }
 
+  private getIndustryInsights(industry: string): string {
+    const insights: Record<string, string> = {
+      'Technology': '- Focus on scalability, automation, and competitive advantage',
+      'Healthcare': '- Emphasize compliance, patient outcomes, and efficiency',
+      'Finance': '- Highlight security, regulatory compliance, and ROI',
+      'Manufacturing': '- Focus on operational efficiency and cost reduction',
+      'Retail': '- Emphasize customer experience and sales optimization',
+      'Education': '- Focus on student outcomes and administrative efficiency',
+      'Real Estate': '- Highlight lead generation and client relationship management'
+    }
+    
+    return insights[industry] || '- Focus on efficiency and growth opportunities'
+  }
+
+  private getGoalStrategy(goal: string): string {
+    const strategies: Record<string, string> = {
+      'book_demo': '- Build curiosity about the product solution',
+      'introduce_product': '- Focus on problem-solution fit',
+      'close_deal': '- Create urgency and address objections',
+      'network': '- Build professional relationship and mutual value',
+      'follow_up': '- Maintain momentum from previous interaction'
+    }
+    
+    return strategies[goal] || '- Build trust and demonstrate value'
+  }
+
+  private getToneGuidance(tone: string): string {
+    const guidance: Record<string, string> = {
+      'friendly': '- Warm, approachable, conversational language',
+      'formal': '- Professional, respectful, structured communication',
+      'direct': '- Concise, clear, action-oriented messaging',
+      'funny': '- Light humor, engaging, memorable approach'
+    }
+    
+    return guidance[tone] || '- Professional and engaging communication'
+  }
+
   private parseResponse(text: string, formData: EmailSequenceFormData): GeneratedSequence {
     try {
-      // Extract JSON from the response if it's wrapped in text
-      const jsonMatch = text.match(/\{[\s\S]*\}/)
-      const jsonText = jsonMatch ? jsonMatch[0] : text
-      const parsed = JSON.parse(jsonText)
+      // Enhanced parsing with multiple fallback strategies
+      let cleanedText = text.trim()
       
-      // Ensure metadata is properly set
-      if (!parsed.metadata) {
-        parsed.metadata = {
-          prospect_name: formData.full_name,
-          company_name: formData.company_name,
-          tone: formData.tone,
-          goal: formData.goal
-        }
-      }
-      
-      return parsed as GeneratedSequence
-    } catch (error) {
-      throw new Error('Failed to parse AI response as JSON')
-    }
-  }
-
-  private validateSequence(sequence: GeneratedSequence): boolean {
-    if (!sequence.steps || !Array.isArray(sequence.steps)) {
-      return false
-    }
-
-    if (sequence.steps.length === 0) {
-      return false
-    }
-
-    return sequence.steps.every(step => 
-      step.step_number && 
-      step.subject_line && 
-      step.email_body && 
-      step.timing
-    )
-  }
-}
-
-// AI Provider Manager
-export class AIProviderManager {
-  private providers: AIProvider[] = []
-  private currentProvider: AIProvider | null = null
-
-  constructor() {
-    this.initializeProviders()
-  }
-
-  private initializeProviders(): void {
-    // Add Cosmic AI provider
-    const cosmicProvider = new CosmicAIProvider()
-    if (cosmicProvider.isAvailable()) {
-      this.providers.push(cosmicProvider)
-      this.currentProvider = cosmicProvider
-    }
-
-    console.log(`Initialized ${this.providers.length} AI providers`)
-    console.log(`Current provider: ${this.currentProvider?.name || 'None'}`)
-  }
-
-  async generateSequence(formData: EmailSequenceFormData): Promise<GeneratedSequence> {
-    if (!this.currentProvider) {
-      throw new Error('No AI provider available')
-    }
-
-    console.log(`Generating sequence with ${this.currentProvider.name}`)
-    
-    try {
-      return await this.currentProvider.generateSequence(formData)
-    } catch (error) {
-      console.error(`${this.currentProvider.name} failed:`, error)
-      
-      // Try other providers as fallback
-      for (const provider of this.providers) {
-        if (provider !== this.currentProvider) {
-          try {
-            console.log(`Trying fallback provider: ${provider.name}`)
-            return await provider.generateSequence(formData)
-          } catch (fallbackError) {
-            console.error(`Fallback provider ${provider.name} failed:`, fallbackError)
-          }
-        }
-      }
-      
-      throw new Error('All AI providers failed')
-    }
-  }
-
-  getAvailableProviders(): string[] {
-    return this.providers.map(p => p.name)
-  }
-
-  getCurrentProvider(): string | null {
-    return this.currentProvider?.name || null
-  }
-
-  hasAvailableProviders(): boolean {
-    return this.providers.length > 0
-  }
-}
-
-// Export singleton instance
-export const aiProviderManager = new AIProviderManager()
+      // Remove markdown code blocks
+      cleanedText = cleanedText.replace(/
